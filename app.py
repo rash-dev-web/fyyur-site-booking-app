@@ -12,6 +12,10 @@ import logging
 from logging import Formatter, FileHandler
 from flask_wtf import Form
 from forms import *
+from flask_migrate import Migrate
+from datetime import datetime
+# from markupsafe import Markup
+
 #----------------------------------------------------------------------------#
 # App Config.
 #----------------------------------------------------------------------------#
@@ -21,7 +25,10 @@ moment = Moment(app)
 app.config.from_object('config')
 db = SQLAlchemy(app)
 
-# TODO: connect to a local postgresql database
+# TODO: connect to a local postgresql database - done
+
+# defining migrate
+migrate = Migrate(app, db)
 
 #----------------------------------------------------------------------------#
 # Models.
@@ -39,7 +46,16 @@ class Venue(db.Model):
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
 
-    # TODO: implement any missing fields, as a database migration using Flask-Migrate
+    # TODO: implement any missing fields, as a database migration using Flask-Migrate - done
+    genres = db.Column(db.String(120))
+    website = db.Column(db.String(120))
+    seeking_talent = db.Column(db.Boolean, default=False)
+    seeking_description = db.Column(db.String(500))
+    past_shows_count = db.Column(db.Integer, default=0)
+    upcoming_shows_count = db.Column(db.Integer, default=0)
+    show = db.relationship('Show', backref='Venue', lazy=True, cascade='all')
+
+
 
 class Artist(db.Model):
     __tablename__ = 'Artist'
@@ -53,9 +69,32 @@ class Artist(db.Model):
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
 
-    # TODO: implement any missing fields, as a database migration using Flask-Migrate
+    # TODO: implement any missing fields, as a database migration using Flask-Migrate - done
+    website = db.Column(db.String(120))
+    seeking_venue = db.Column(db.Boolean, default=False)
+    seeking_description = db.Column(db.String(500))
+    past_shows_count = db.Column(db.Integer, default=0)
+    upcoming_shows_count = db.Column(db.Integer, default=0)
+    show = db.relationship('Show', backref='Artist', lazy=True, cascade='all')
 
-# TODO Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
+
+
+# TODO Implement Show and Artist models, and complete all model relationships and properties, as a database migration. - done
+    
+class Show(db.Model):
+   __tablename__ = 'Show'
+
+   id = db.Column(db.Integer, primary_key=True)
+   venue_id = db.Column(db.Integer, db.ForeignKey('Venue.id'))
+   artist_id = db.Column(db.Integer, db.ForeignKey('Artist.id'))
+   start_time = db.Column(db.DateTime)
+   upcoming_show = db.Column(db.Boolean, default=True)
+
+
+
+# creating table based on above models
+# with app.app_context():
+#     db.create_all()
 
 #----------------------------------------------------------------------------#
 # Filters.
@@ -109,6 +148,8 @@ def venues():
     }]
   }]
   return render_template('pages/venues.html', areas=data);
+
+
 
 @app.route('/venues/search', methods=['POST'])
 def search_venues():
@@ -515,7 +556,9 @@ if not app.debug:
 
 # Or specify port manually:
 
-if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port)
+# if __name__ == '__main__':
+#     port = int(os.environ.get('PORT', 5000))
+#     app.run(host='0.0.0.0', port=port)
 
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', debug=True)
