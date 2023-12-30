@@ -1,7 +1,8 @@
 from app import db
 
+
 class Venue(db.Model):
-    __tablename__ = 'Venue'
+    __tablename__ = "Venue"
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
@@ -12,19 +13,17 @@ class Venue(db.Model):
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
 
-    # TODO: implement any missing fields, as a database migration using Flask-Migrate - done
     genres = db.Column(db.String(120))
     website = db.Column(db.String(120))
     seeking_talent = db.Column(db.Boolean, default=False)
     seeking_description = db.Column(db.String(500))
     past_shows_count = db.Column(db.Integer, default=0)
     upcoming_shows_count = db.Column(db.Integer, default=0)
-    show = db.relationship('Show', backref='Venue', lazy=True, cascade='all')
-
+    show = db.relationship("Show", backref="Venue", lazy=True, cascade="all")
 
 
 class Artist(db.Model):
-    __tablename__ = 'Artist'
+    __tablename__ = "Artist"
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
@@ -35,23 +34,19 @@ class Artist(db.Model):
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
 
-    # TODO: implement any missing fields, as a database migration using Flask-Migrate - done
     website = db.Column(db.String(120))
     seeking_venue = db.Column(db.Boolean, default=False)
     seeking_description = db.Column(db.String(500))
     past_shows_count = db.Column(db.Integer, default=0)
     upcoming_shows_count = db.Column(db.Integer, default=0)
-    show = db.relationship('Show', backref='Artist', lazy=True, cascade='all')
+    show = db.relationship("Show", backref="Artist", lazy=True, cascade="all")
 
 
-
-# TODO Implement Show and Artist models, and complete all model relationships and properties, as a database migration. - done
-    
 class Show(db.Model):
-   __tablename__ = 'Show'
+    __tablename__ = "Show"
 
-   id = db.Column(db.Integer, primary_key=True)
-   venue_id = db.Column(db.Integer, db.ForeignKey('Venue.id'))
-   artist_id = db.Column(db.Integer, db.ForeignKey('Artist.id'))
-   start_time = db.Column(db.DateTime)
-   upcoming_show = db.Column(db.Boolean, default=True)
+    id = db.Column(db.Integer, primary_key=True)
+    venue_id = db.Column(db.Integer, db.ForeignKey("Venue.id"))
+    artist_id = db.Column(db.Integer, db.ForeignKey("Artist.id"))
+    start_time = db.Column(db.DateTime)
+    upcoming_show = db.Column(db.Boolean, default=True)

@@ -2,4 +2,10 @@ babel==2.9.0
 python-dateutil==2.6.0
 flask-moment==1.0.5
 flask-wtf==0.14.3
-flask_sqlalchemy==2.5.1
+flask-sqlalchemy==2.5.1
+flask==2.0.3
+flask-migrate==4.0.5
+flask-moment==1.0.5
+python-dateutil==2.6.0
+WTForms==3.1.1
+psycopg2==2.9.9
