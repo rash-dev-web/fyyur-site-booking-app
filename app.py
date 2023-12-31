@@ -216,17 +216,34 @@ def create_venue_form():
 
 @app.route("/venues/create", methods=["POST"])
 def create_venue_submission():
-    form = VenueForm(request.form)
+    #set the flask form
+    form = VenueForm(request.form, meta={'csrf': False})
     error = False
-    if request.method == "POST":
-        new_venue = Venue()
-        form.populate_obj(new_venue)
+
+    #Validate all fields
+    if form.validate():
+        # prepare for transaction
         try:
+            new_venue = Venue(
+                name = form.name.data,
+                city = form.city.data,
+                state = form.state.data,
+                address = form.address.data,
+                phone = form.phone.data,
+                image_link = form.image_link.data,
+                facebook_link = form.facebook_link.data,
+                genres = form.genres.data,
+                website = form.website_link.data,
+                seeking_talent = form.seeking_talent.data,
+                seeking_description = form.seeking_description.data
+            )
             db.session.add(new_venue)
             db.session.commit()
             # on successful db insert, flash success
             flash("Venue " + request.form["name"] + " was successfully listed!")
         except Exception as e:
+            print(e)
+            # In case of any error, roll back it
             db.session.rollback()
             print(sys.exc_info())
             flash(
@@ -235,9 +252,16 @@ def create_venue_submission():
             error = True
         finally:
             db.session.close()
+        return render_template("pages/home.html")
+    # If there is any invalid field
     else:
-        flash("An error occurred. Venue could not be listed.")
-    return render_template("pages/home.html")
+        message=[]
+        for field, errors in form.errors.items():
+            for error in errors:
+                message.append(f"{field}: {error}")
+        flash('Please fix the following errors: ' + ', '.join(message))
+        form=VenueForm()
+        return render_template('forms/new_venue.html', form=form)
 
 
 @app.route("/venues/<venue_id>", methods=["DELETE"])
@@ -451,25 +475,46 @@ def create_artist_form():
 @app.route("/artists/create", methods=["POST"])
 def create_artist_submission():
     # called upon submitting the new artist listing form
-    form = ArtistForm(request.form)
-    new_artist = Artist()
-    form.populate_obj(new_artist)
-    error = False
-    try:
-        db.session.add(new_artist)
-        db.session.commit()
-        # on successful db insert, flash success
-        flash("Artist " + request.form["name"] + " was successfully listed!")
-    except Exception as e:
-        db.session.rollback()
-        print(sys.exc_info()[1])
-        error = True
-    finally:
-        db.session.close()
-    if error:
-        # e.g., flash('An error occurred. Artist ' + data.name + ' could not be listed.')
-        flash("An error occurred. Artist " + new_artist.name + " could not be listed.")
-    return render_template("pages/home.html")
+    # Set the flask from
+    form = ArtistForm(request.form, meta={'csrf': False})
+
+    # Validate all fields
+    if form.validate():
+        #prepare for transaction
+        try:
+            new_artist = Artist(
+                name = form.name.data,
+                city = form.city.data,
+                state = form.state.data,
+                phone = form.phone.data,
+                genres = form.genres.data,
+                image_link = form.image_link.data,
+                facebook_link = form.facebook_link.data,
+                website = form.website_link.data,
+                seeking_venue = form.seeking_venue.data,
+                seeking_description = form.seeking_description.data
+            )
+            db.session.add(new_artist)
+            db.session.commit()
+            # on successful db insert, flash success
+            flash("Artist " + request.form["name"] + " was successfully listed!")
+        except Exception as e:
+            print(e)
+            db.session.rollback()
+            print(sys.exc_info()[1])
+            flash("An error occurred. Artist " + new_artist.name + " could not be listed.")
+        finally:
+            db.session.close()
+        return render_template("pages/home.html")
+    # If there is any invalid field
+    else:
+        message=[]
+        for field, errors in form.errors.items():
+            for error in errors:
+                message.append(f"{field}: {error}")
+        flash('Please fix the following errors: ' + ', '.join(message))
+        form=ArtistForm()
+        return render_template('forms/new_artist.html', form=form)
 
 
 #  Shows
@@ -509,24 +554,42 @@ def create_shows():
 @app.route("/shows/create", methods=["POST"])
 def create_show_submission():
     # called to create new shows in the db, upon submitting new show listing form
-    form = ShowForm(request.form)
-    new_show = Show()
-    form.populate_obj(new_show)
-    error = False
-    try:
-        db.session.add(new_show)
-        db.session.commit()
-        # on successful db insert, flash success
-        flash("Show was successfully listed!")
-    except Exception as e:
-        db.session.rollback()
-        print(sys.exc_info())
-        error = True
-    finally:
-        db.session.close()
-    if error:
-        flash("An error occurred. Show could not be listed.")
-    return render_template("pages/home.html")
+    # Set the flask form
+    form = ShowForm(request.form, meta={'csrf': False})
+
+    # Validate all fields
+    if form.validate():
+        # Prepare for transaction
+        try:
+            new_show = Show(
+                venue_id = form.venue_id.data,
+                artist_id = form.artist_id.data,
+                start_time = form.start_time.data
+            )
+            db.session.add(new_show)
+            db.session.commit()
+
+            # on successful db insert, flash success
+            flash("Show was successfully listed!")
+        except Exception as e:
+            print(e)
+
+            #In case of any error, roll back it
+            db.session.rollback()
+            flash("An error occurred. Show could not be listed.")
+            print(sys.exc_info())
+        finally:
+            db.session.close()
+        return render_template("pages/home.html")
+    # If there is any invalid field
+    else:
+        message=[]
+        for field, errors in form.errors.items():
+            for error in errors:
+                message.append(f"{field}: {error}")
+        flash('Please fix the following errors: ' + ', '.join(message))
+        form=ShowForm()
+        return render_template('forms/new_show.html', form=form)
 
 
 @app.errorhandler(404)
